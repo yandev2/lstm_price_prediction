@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         static::ssl();
     }
 
-      private function ssl()
+    private function ssl()
     {
         URL::macro(
             'alternateHasCorrectSignature',
@@ -82,12 +82,11 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
      */
-      private function bootSSL()
+    private function bootSSL()
     {
         if ($this->app->environment('production')) {
-            URL::forceScheme('https');
+          //  URL::forceScheme('https');
         }
     }
     public function boot(): void
