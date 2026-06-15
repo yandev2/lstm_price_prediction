@@ -62,7 +62,7 @@ class DashboardPage extends Dashboard
     {
         return $schema
             ->components([
-             \Filament\Schemas\Components\Group::make()
+                \Filament\Schemas\Components\Group::make()
                     ->columns([
                         'sm' => 1,
                         'md' => 2,
@@ -122,7 +122,7 @@ class DashboardPage extends Dashboard
             return null;
         }
 
-        $hasAlerts = \App\Models\PrediksiHarga::whereDate('tanggal_prediksi', today())
+        $hasAlerts = \App\Models\PrediksiHarga::whereDate('tanggal_prediksi', today(config('app.timezone')))
             ->exists();
 
         if (!$hasAlerts) {

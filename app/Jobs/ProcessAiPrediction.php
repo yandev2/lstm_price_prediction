@@ -24,10 +24,10 @@ class ProcessAiPrediction implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $idHarga;
-    
+
     // Set batas waktu job ke 120 detik (2 menit)
     public $timeout = 120;
-    
+
     // Coba ulang 3 kali jika gagal (misalnya script python gagal / crash)
     public $tries = 3;
 
@@ -99,7 +99,7 @@ class ProcessAiPrediction implements ShouldQueue
             $process->run();
 
             Storage::disk('local')->delete($tempFileName);
-            
+
             if (!$process->isSuccessful()) {
                 $stdErr = $process->getErrorOutput();
                 $stdOut = $process->getOutput();
@@ -128,8 +128,8 @@ class ProcessAiPrediction implements ShouldQueue
             }
 
             $dataPrediksi = $result['data'];
-            
-            $tanggalUntukPrediksi = Carbon::parse($hargaPangan->tanggal)->addDay()->format('Y-m-d');
+
+            $tanggalUntukPrediksi = Carbon::parse($hargaPangan->tanggal, config('app.timezone'))->addDay()->format('Y-m-d');
             PrediksiHarga::updateOrCreate(
                 [
                     'komoditas_id' => $hargaPangan->komoditas_id,
@@ -138,7 +138,7 @@ class ProcessAiPrediction implements ShouldQueue
                 ],
                 [
                     'model_ai_id' => $modelAi->id,
-                    'tanggal_prediksi' => now(),
+                    'tanggal_prediksi' => now(config('app.timezone')),
                     'harga_prediksi' => (int) round($dataPrediksi['harga_prediksi']),
                     'selisih_persen' => $dataPrediksi['selisih_persen'],
                     'status_anomali' => $dataPrediksi['status_anomali'],
