@@ -123,6 +123,7 @@ class DashboardPage extends Dashboard
         }
 
         $hasAlerts = \App\Models\PrediksiHarga::whereDate('tanggal_prediksi', today(config('app.timezone')))
+            ->where('status_anomali', '!=', 'normal')
             ->exists();
 
         if (!$hasAlerts) {
