@@ -1,15 +1,16 @@
 <style>
     /* Elevate the parent form's stacking context so dropdowns don't get trapped below widgets */
+    /* z-index 10 cukup untuk berada di atas widget lain, tapi tetap di bawah topbar header Filament (z-20/z-40) */
     form:has(#filter-dashboard-container) {
         position: relative;
-        z-index: 50 !important;
+        z-index: 10 !important;
     }
     div:has(> form:has(#filter-dashboard-container)) {
         position: relative;
-        z-index: 50 !important;
+        z-index: 10 !important;
     }
 </style>
-<div id="filter-dashboard-container" class="relative z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 md:p-6 mb-8">
+<div id="filter-dashboard-container" class="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 md:p-6 mb-8">
     <!-- Abstract glow effects -->
     <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
         <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-50 dark:bg-primary-500/5 rounded-full blur-3xl"></div>

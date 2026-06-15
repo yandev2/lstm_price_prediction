@@ -13,6 +13,7 @@ use App\Filament\Admin\Widgets\WelcomeBanner;
 use App\Filament\Admin\Widgets\RingkasanHargaTerbaru;
 use App\Filament\Admin\Widgets\RingkasanJalurDistribusi;
 use App\Filament\Admin\Widgets\TabelPrediksiHarga;
+use App\Filament\Admin\Widgets\TrendPrediksiHargaPasar;
 use App\Models\Komoditas;
 use App\Models\Pasar;
 use Carbon\Carbon;
@@ -46,11 +47,13 @@ class DashboardPage extends Dashboard
             RingkasanHargaTerbaru::class,
             RingkasanJalurDistribusi::class,
             TrendHargaPasar::class,
+           
             RealtimeVolumeDistribusi::class,
             GrafikVolumeDistribusi::class,
             HargaPanganRealtimeTable::class,
             TabelAlurDistribusi::class,
-            TabelPrediksiHarga::class
+            TabelPrediksiHarga::class,
+            TrendPrediksiHargaPasar::class,
         ];
     }
     public function getFooterWidgets(): array

@@ -2,25 +2,24 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\HargaPangan;
+use App\Models\PrediksiHarga;
 use App\Models\Komoditas;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use Flowframe\Trend\Trend;
 use App\Filament\Traits\HasChartColors;
 use Illuminate\Support\Facades\DB;
 use Carbon\CarbonPeriod;
 
-class TrendHargaPasar extends ChartWidget
+class TrendPrediksiHargaPasar extends ChartWidget
 {
     use InteractsWithPageFilters;
     use HasWidgetShield;
     use HasChartColors;
 
-    protected ?string $heading = 'Trend Harga Pasar';
+    protected ?string $heading = 'Prediksi Harga Pangan';
     
 
     protected int | string | array $columnSpan = 'full';
@@ -28,29 +27,24 @@ class TrendHargaPasar extends ChartWidget
 
     public function getDescription(): ?string
     {
-        $currentDate = isset($this->pageFilters['start_date']) ? Carbon::parse($this->pageFilters['start_date'])->translatedFormat('F Y') : now()->subMonthsNoOverflow(1)->translatedFormat('F Y');
-        $lastDate = isset($this->pageFilters['end_date']) ? Carbon::parse($this->pageFilters['end_date'])->translatedFormat('F Y') : now()->translatedFormat('F Y');
+        $currentDate = isset($this->pageFilters['start_date']) ? Carbon::parse($this->pageFilters['start_date'])->translatedFormat('d M Y') : now()->translatedFormat('d M Y');
+        $lastDate = isset($this->pageFilters['end_date']) ? Carbon::parse($this->pageFilters['end_date'])->translatedFormat('d M Y') : now()->addDays(7)->translatedFormat('d M Y');
 
-        return "Trend pergerakan harga dari {$currentDate} sampai {$lastDate}";
+        return "Trend prediksi harga dari {$currentDate} sampai {$lastDate}";
     }
+
     protected function getData(): array
     {
         $pasar = $this->pageFilters['pasar'] ?? null;
         $komoditas = $this->pageFilters['komoditas'] ?? null;
 
         $currentDate = isset($this->pageFilters['start_date'])
-            ? Carbon::parse($this->pageFilters['start_date'])->startOfMonth() // Kunci ke tanggal 1 di bulan tersebut
-            : now()->subMonthsNoOverflow(1)->startOfMonth();
+            ? Carbon::parse($this->pageFilters['start_date'])->startOfDay()
+            : now()->startOfDay();
 
         $lastDate = isset($this->pageFilters['end_date'])
-            ? Carbon::parse($this->pageFilters['end_date'])->endOfMonth()
-            : now()->endOfMonth();
-
-        // Base query untuk Harga Pangan dengan filter pasar
-        $baseQuery = HargaPangan::query()
-            ->when($pasar, function ($query, $pasar) {
-                return $query->where('pasar_id', $pasar);
-            });
+            ? Carbon::parse($this->pageFilters['end_date'])->endOfDay()
+            : now()->addDays(7)->endOfDay();
 
         $komoditasList = Komoditas::query()
             ->when($komoditas, function ($query, $komoditas) {
@@ -58,12 +52,12 @@ class TrendHargaPasar extends ChartWidget
             })
             ->get();
 
-        $trendData = DB::table('harga_pangans')
+        $trendData = DB::table('prediksi_hargas')
             ->when($pasar, fn($query, $pasar) => $query->where('pasar_id', $pasar))
             ->when($komoditas, fn($query, $komoditas) => $query->where('komoditas_id', $komoditas))
-            ->whereBetween('tanggal', [$currentDate->startOfDay(), $lastDate->endOfDay()])
-            ->selectRaw('komoditas_id, DATE(tanggal) as date, AVG(harga) as aggregate')
-            ->groupBy('komoditas_id', DB::raw('DATE(tanggal)'))
+            ->whereBetween('prediksi_harga_untuk_tanggal', [$currentDate->format('Y-m-d'), $lastDate->format('Y-m-d')])
+            ->selectRaw('komoditas_id, DATE(prediksi_harga_untuk_tanggal) as date, AVG(harga_prediksi) as aggregate')
+            ->groupBy('komoditas_id', DB::raw('DATE(prediksi_harga_untuk_tanggal)'))
             ->get()
             ->groupBy('komoditas_id');
 
@@ -81,28 +75,27 @@ class TrendHargaPasar extends ChartWidget
             $dataPoints = [];
             foreach ($period as $date) {
                 $dateString = $date->format('Y-m-d');
-                $dataPoints[] = $komoditasData->has($dateString) ? (float) $komoditasData->get($dateString)->aggregate : 0;
+                $dataPoints[] = $komoditasData->has($dateString) ? (float) $komoditasData->get($dateString)->aggregate : null;
             }
 
             $color = $this->chartColors[$index % count($this->chartColors)];
 
             $datasets[] = [
-                'label' => $komoditasItem->nama_komoditas,
+                'label' => 'Prediksi ' . $komoditasItem->nama_komoditas,
                 'data' => $dataPoints,
                 'borderColor' => $color,
-
-                'backgroundColor' =>$this->hexToRgba($color, 0.15), // sedikit lebih pekat
-
-                'fill' => true, 
-                'borderWidth' => 3, // Garis lebih tebal agar terlihat bold
-                'tension' => 0.45, // Lengkungan lebih halus
-                'cubicInterpolationMode' => 'monotone', // Mengalir lebih natural
-                'pointRadius' => 0, // Titik dihilangkan saat tidak disorot agar bersih
-                'pointHoverRadius' => 6, // Titik membesar saat di-hover
+                'backgroundColor' => $this->hexToRgba($color, 0.15),
+                'fill' => false, 
+                'borderWidth' => 3, 
+                'borderDash' => [5, 5], // Garis putus-putus untuk menandakan prediksi
+                'tension' => 0.45, 
+                'cubicInterpolationMode' => 'monotone', 
+                'pointRadius' => 0, 
+                'pointHoverRadius' => 6, 
                 'pointBackgroundColor' => '#ffffff',
                 'pointBorderColor' => $color,
                 'pointBorderWidth' => 2,
-                'skipNull' => true
+                'spanGaps' => true,
             ];
         }
 
@@ -140,13 +133,13 @@ class TrendHargaPasar extends ChartWidget
                 y: {
                     beginAtZero: false, 
                     border: {
-                        display: false // Hilangkan garis sumbu utama Y
+                        display: false
                     },
                     grid: {
                         display: true,
-                        color: 'rgba(156, 163, 175, 0.15)', // Warna grid lebih soft
+                        color: 'rgba(156, 163, 175, 0.15)',
                         drawTicks: false,
-                        borderDash: [5, 5] // Grid putus-putus modern
+                        borderDash: [5, 5]
                     },
                     ticks: {
                         padding: 10,
@@ -158,14 +151,14 @@ class TrendHargaPasar extends ChartWidget
                 },
                 x: {
                     border: {
-                        display: false // Hilangkan garis sumbu utama X
+                        display: false
                     },
                     grid: {
                         display: false 
                     },
                     ticks: {
                         autoSkip: true, 
-                        maxTicksLimit: 8, // Kurangi jumlah label X agar tidak padat
+                        maxTicksLimit: 8,
                         maxRotation: 0,
                         minRotation: 0,
                         padding: 10,
@@ -190,7 +183,7 @@ class TrendHargaPasar extends ChartWidget
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Warna slate-900 gelap elegan
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
                     titleColor: '#f1f5f9',
                     bodyColor: '#e2e8f0',
                     enabled: true,
