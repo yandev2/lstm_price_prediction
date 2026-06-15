@@ -79,9 +79,10 @@ class KearifanResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-          
+             ->filtersFormWidth('md')
+            ->filtersFormColumns(1)
             ->filters([
-                TrashedFilter::make()->columnSpan(2),
+                TrashedFilter::make()->columnSpan(1),
                 SelectFilter::make('jenis')
                     ->options(fn() => (new Kearifan())->jenis_options)
                     ->searchable(),

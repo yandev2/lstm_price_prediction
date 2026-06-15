@@ -79,13 +79,10 @@ class FaktorEksternalResource extends Resource
                     ->searchable(),
                 TextColumn::make('nilai')
                     ->searchable(),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filtersFormWidth('md')
+            ->filtersFormColumns(2)
             ->filters([
-                TrashedFilter::make(),
                 SelectFilter::make('jenis')
                     ->options(fn() => (new FaktorEksternal())->jenis_options)
                     ->searchable(),
@@ -105,14 +102,11 @@ class FaktorEksternalResource extends Resource
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                
                 ]),
             ]);
     }

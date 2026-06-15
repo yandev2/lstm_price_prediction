@@ -42,8 +42,9 @@ class TrendPrediksiHargaPasar extends ChartWidget
             ? Carbon::parse($this->pageFilters['start_date'])->startOfDay()
             : now()->startOfDay();
 
+        // Karena ini adalah chart "Prediksi" (ke depan), kita otomatis tambahkan 7 hari dari filter end_date
         $lastDate = isset($this->pageFilters['end_date'])
-            ? Carbon::parse($this->pageFilters['end_date'])->endOfDay()
+            ? Carbon::parse($this->pageFilters['end_date'])->addDays(7)->endOfDay()
             : now()->addDays(7)->endOfDay();
 
         $komoditasList = Komoditas::query()

@@ -66,6 +66,8 @@ class HargaPangansTable
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+             ->filtersFormWidth('lg')
+            ->filtersFormColumns(2)
             ->filters([
                 SelectFilter::make('komoditas_id')
                     ->label('Komoditas')
@@ -118,6 +120,7 @@ class HargaPangansTable
                     })
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make()
             ])

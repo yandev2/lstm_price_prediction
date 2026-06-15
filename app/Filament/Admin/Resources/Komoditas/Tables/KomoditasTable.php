@@ -49,11 +49,13 @@ class KomoditasTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filtersFormWidth('md')
+            ->filtersFormColumns(2)
             ->filters([
-                TrashedFilter::make()->columnSpan(3),
+                TrashedFilter::make()->columnSpan(2),
                 SelectFilter::make('kategori')
                     ->options(fn() => (new Komoditas())->kategori_options)
-                    ->searchable()->columnSpan(2),
+                    ->searchable(),
                 SelectFilter::make('satuan')
                     ->options(fn() => (new Komoditas())->satuan_options)
                     ->searchable(),
