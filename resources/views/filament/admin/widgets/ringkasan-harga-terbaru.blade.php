@@ -41,12 +41,12 @@
                 }
             @endphp
 
-            <div class="relative flex flex-col justify-between p-5 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden hover:shadow-md hover:ring-primary-500/30 transition duration-300 group">
+            <div class="relative isolate flex flex-col justify-between p-5 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden hover:shadow-md hover:ring-primary-500/30 transition duration-300 group">
                 
                 <!-- Glow Effect -->
-                <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full opacity-20 blur-2xl transition-all duration-700 group-hover:scale-150 {{ $isNaik ? 'bg-danger-500' : ($isTurun ? 'bg-success-500' : 'bg-gray-500') }}"></div>
+                <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full opacity-20 blur-2xl transition-all duration-700 group-hover:scale-150 {{ $isNaik ? 'bg-danger-500' : ($isTurun ? 'bg-success-500' : 'bg-gray-500') }} -z-10"></div>
 
-                <div class="relative z-10">
+                <div class="relative">
                     <div class="flex items-start justify-between mb-4">
                         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 line-clamp-2 leading-tight pr-2" title="{{ $stat['nama'] }}">
                             {{ $stat['nama'] }}

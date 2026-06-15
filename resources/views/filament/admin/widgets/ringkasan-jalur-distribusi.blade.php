@@ -2,13 +2,13 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         
         {{-- Stat 1: Jalur Distribusi Utama --}}
-        <div class="relative flex flex-col justify-between p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden group transition duration-300 hover:shadow-md hover:ring-primary-500/30">
+        <div class="relative isolate flex flex-col justify-between p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden group transition duration-300 hover:shadow-md hover:ring-primary-500/30">
             <!-- Background Icon -->
-            <div class="absolute -right-6 -top-6 text-primary-500/5 dark:text-primary-400/5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <div class="absolute -right-6 -top-6 text-primary-500/5 dark:text-primary-400/5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12 -z-10">
                 <x-heroicon-o-map class="w-40 h-40" />
             </div>
             
-            <div class="relative z-10">
+            <div class="relative">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="flex items-center justify-center w-10 h-10 bg-primary-50 dark:bg-primary-500/10 rounded-xl text-primary-600 dark:text-primary-400 ring-1 ring-primary-500/20">
                         <x-heroicon-o-map class="w-5 h-5" />
@@ -60,13 +60,13 @@
         </div>
 
         {{-- Stat 2: Transportasi Utama --}}
-        <div class="relative flex flex-col justify-between p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden group transition duration-300 hover:shadow-md hover:ring-info-500/30">
+        <div class="relative isolate flex flex-col justify-between p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden group transition duration-300 hover:shadow-md hover:ring-info-500/30">
             <!-- Background Icon -->
-            <div class="absolute -right-6 -top-6 text-info-500/5 dark:text-info-400/5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-12">
+            <div class="absolute -right-6 -top-6 text-info-500/5 dark:text-info-400/5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-12 -z-10">
                 <x-heroicon-o-truck class="w-40 h-40" />
             </div>
 
-            <div class="relative z-10">
+            <div class="relative">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <div class="flex items-center justify-center w-10 h-10 bg-info-50 dark:bg-info-500/10 rounded-xl text-info-600 dark:text-info-400 ring-1 ring-info-500/20">

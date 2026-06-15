@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        static::ssl();
+       // static::ssl();
     }
 
     private function ssl()

@@ -14,7 +14,21 @@ class GrafikVolumeDistribusi extends ChartWidget
     use InteractsWithPageFilters;
     use HasWidgetShield;
 
-    protected ?string $heading = '📊 Total Volume Distribusi Bulanan (Per Hari)';
+    protected ?string $heading = 'Total Volume Distribusi';
+
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return new \Illuminate\Support\HtmlString(
+            \Illuminate\Support\Facades\Blade::render('
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400">
+                        <x-heroicon-o-chart-bar class="w-5 h-5" />
+                    </div>
+                    <span>Total Volume Distribusi</span>
+                </div>
+            ')
+        );
+    }
     protected int | string | array $columnSpan = 'full';
     protected ?string $maxHeight = '350px';
 

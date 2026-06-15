@@ -32,9 +32,9 @@ class HistoryHargaPanganResource extends Resource
     protected static ?string $model = HistoryHargaPangan::class;
     protected static string|BackedEnum|null $navigationIcon = null;
     protected static string | UnitEnum | null $navigationGroup = 'Monitoring';
-    protected static ?string $navigationLabel = "History Harga Pangan ";
-    protected static ?string $pluralModelLabel = "History Harga Pangan ";
-    protected static ?string $slug = "history-harga-pangan";
+    protected static ?string $navigationLabel = "History Harga ";
+    protected static ?string $pluralModelLabel = "History Harga ";
+    protected static ?string $slug = "history-harga";
 
     public static function table(Table $table): Table
     {

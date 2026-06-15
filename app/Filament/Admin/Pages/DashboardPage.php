@@ -122,6 +122,13 @@ class DashboardPage extends Dashboard
             return null;
         }
 
+        $hasAlerts = \App\Models\PrediksiHarga::whereDate('tanggal_prediksi', today())
+            ->exists();
+
+        if (!$hasAlerts) {
+            return null;
+        }
+
         return Blade::render('
         <script>
             document.addEventListener("livewire:navigated", () => {

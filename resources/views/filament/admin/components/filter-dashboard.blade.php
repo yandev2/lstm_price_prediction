@@ -1,7 +1,20 @@
-<div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 md:p-6 mb-8 overflow-hidden">
+<style>
+    /* Elevate the parent form's stacking context so dropdowns don't get trapped below widgets */
+    form:has(#filter-dashboard-container) {
+        position: relative;
+        z-index: 50 !important;
+    }
+    div:has(> form:has(#filter-dashboard-container)) {
+        position: relative;
+        z-index: 50 !important;
+    }
+</style>
+<div id="filter-dashboard-container" class="relative z-50 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 md:p-6 mb-8">
     <!-- Abstract glow effects -->
-    <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-50 dark:bg-primary-500/5 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-info-50 dark:bg-info-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-50 dark:bg-primary-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-info-50 dark:bg-info-500/5 rounded-full blur-3xl"></div>
+    </div>
     
     <div class="relative z-10">
         <!-- Header & Action -->

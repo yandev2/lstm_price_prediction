@@ -3,7 +3,7 @@
 namespace App\Filament\Admin\Resources\Activities\Pages;
 
 use App\Filament\Admin\Resources\Activities\ActivityResource;
-use App\Filament\Resources\Activities\Widgets\ActivityAnalytic;
+use App\Filament\Admin\Resources\Activities\Widgets\ActivityAnalytic;
 use Filament\Actions\CreateAction;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;

@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\MappingKearifans;
 use App\Filament\Admin\Resources\MappingKearifans\Pages\CreateMappingKearifan;
 use App\Filament\Admin\Resources\MappingKearifans\Pages\EditMappingKearifan;
 use App\Filament\Admin\Resources\MappingKearifans\Pages\ListMappingKearifans;
-use App\Filament\Admin\Resources\MappingKearifans\Pages\ViewMappingKearifan;
 use App\Filament\Admin\Resources\MappingKearifans\Schemas\MappingKearifanForm;
 use App\Filament\Admin\Resources\MappingKearifans\Schemas\MappingKearifanInfolist;
 use App\Filament\Admin\Resources\MappingKearifans\Tables\MappingKearifansTable;
@@ -21,7 +20,7 @@ class MappingKearifanResource extends Resource
 {
     protected static ?string $model = MappingKearifan::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Cog6Tooth;
     protected static string|UnitEnum|null $navigationGroup = 'Ai Management';
 
     protected static ?string $navigationLabel = "Mapping Kearifan";

@@ -108,7 +108,7 @@ class RingkasanHargaTerbaru extends Widget
         }
 
         return [
-            'heading' => '📊 Ringkasan Harga Terbaru',
+            'heading' => 'Ringkasan Harga Terbaru',
             'description' => $this->getDescription(),
             'statsData' => $statsData,
         ];

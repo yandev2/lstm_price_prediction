@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
            // KomoditasSeeder::class,
            // PasarSeeder::class,
            // KearifanSeeder::class,
-            HargaPanganSeeder::class,
+            //HargaPanganSeeder::class,
         ]);
     }
 }

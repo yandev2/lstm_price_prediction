@@ -6,69 +6,73 @@ use App\Filament\Admin\Resources\HargaPangans\Pages\ListHargaPangans;
 use App\Models\HargaPangan;
 use App\Models\Komoditas;
 use Filament\Widgets\Concerns\InteractsWithPageTable;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\Widget;
 
-class SummaryHargaPangan extends StatsOverviewWidget
+class SummaryHargaPangan extends Widget
 {
     use InteractsWithPageTable;
 
-    protected ?string $heading = 'Rentang Harga Komoditas Terbaru';
+    protected  string $view = 'filament.admin.resources.harga-pangans.widgets.summary-harga-pangan';
+    protected int | string | array $columnSpan = 'full';
+
     protected function getTablePage(): string
     {
         return ListHargaPangans::class;
     }
 
-    protected function getStats(): array
+    protected function getViewData(): array
     {
         $stats = [];
         $tanggalTerbaru = HargaPangan::latest('tanggal')->value('tanggal');
+        
         if (!$tanggalTerbaru) {
-            return [];
+            return ['stats' => [], 'tanggal_terbaru' => null];
         }
 
-        $daftarKomoditas = Komoditas::all();
+        // Ambil SEMUA data harga pada tanggal terbaru secara bulk dalam 1 waktu
+        // beserta relasi komoditas dan pasar (Eager Loading)
+        $semuaHargaHariIni = HargaPangan::with(['komoditas', 'pasar'])
+            ->where('tanggal', $tanggalTerbaru)
+            ->get()
+            ->groupBy('komoditas_id');
 
-        foreach ($daftarKomoditas as $komoditas) {
+        foreach ($semuaHargaHariIni as $komoditasId => $hargaPanganGroup) {
+            
+            // Karena kita sudah eager load, kita bisa ambil relasi dari item pertama di group ini
+            $komoditas = $hargaPanganGroup->first()->komoditas;
 
-            // 3. Cari Harga Tertinggi pada tanggal terbaru untuk komoditas ini
-            $hargaTertinggi =  HargaPangan::where('tanggal', $tanggalTerbaru)
-                ->where('komoditas_id', $komoditas->id)
-                ->with('pasar')
-                ->orderBy('harga', 'desc')
-                ->first();
+            if (!$komoditas) continue;
 
-            // 4. Cari Harga Terendah pada tanggal terbaru untuk komoditas ini
-            $hargaTerendah = HargaPangan::where('tanggal', $tanggalTerbaru)
-                ->where('komoditas_id', $komoditas->id)
-                ->with('pasar')
-                ->orderBy('harga', 'asc')
-                ->first();
+            // Cari Harga Tertinggi (dari RAM/Collection, bukan dari Database)
+            $hargaTertinggi = $hargaPanganGroup->sortByDesc('harga')->first();
+            
+            // Cari Harga Terendah (dari RAM/Collection, bukan dari Database)
+            $hargaTerendah = $hargaPanganGroup->sortBy('harga')->first();
 
-            // JIKA pada tanggal tersebut komoditas ini memiliki data harga, buat Card Stat-nya
+            // Jika ada data tertinggi dan terendah
             if ($hargaTertinggi && $hargaTerendah) {
-
+                
                 $namaPasarMaju = $hargaTertinggi->pasar?->nama_pasar ?? 'Pasar Tidak Diketahui';
                 $namaPasarMurah = $hargaTerendah->pasar?->nama_pasar ?? 'Pasar Tidak Diketahui';
 
-                // Format nominal rupiah untuk tampilan yang rapi
-                $formatTertinggi = 'Rp ' . number_format($hargaTertinggi->harga, 0, ',', '.');
-                $formatTerendah = 'Rp ' . number_format($hargaTerendah->harga, 0, ',', '.');
+                // Hitung rata-rata di RAM
+                $hargaRataRata = $hargaPanganGroup->avg('harga');
 
-                // Tentukan rata-rata harga untuk nilai utama Card (opsional, sebagai pemanis data utama)
-                $hargaRataRata = HargaPangan::where('tanggal', $tanggalTerbaru)
-                    ->where('komoditas_id', $komoditas->id)
-                    ->avg('harga');
-                $formatRataRata = 'Rp ' . number_format($hargaRataRata, 0, ',', '.');
-
-                // 5. Masukkan ke dalam array stats menggunakan objek Stat Filament v3
-                
-                $stats[] = Stat::make($komoditas->nama_komoditas, $formatRataRata)
-                    ->description("Tertinggi: {$formatTertinggi} ({$namaPasarMaju}) | Terendah: {$formatTerendah} ({$namaPasarMurah})")
-                    ->color('warning'); // Warna jingga khas info pemda
+                // Masukkan ke array stats
+                $stats[] = [
+                    'komoditas' => $komoditas->nama_komoditas,
+                    'rata_rata' => $hargaRataRata,
+                    'tertinggi' => $hargaTertinggi->harga,
+                    'pasar_tertinggi' => $namaPasarMaju,
+                    'terendah' => $hargaTerendah->harga,
+                    'pasar_terendah' => $namaPasarMurah,
+                ];
             }
         }
 
-        return $stats;
+        return [
+            'stats' => $stats,
+            'tanggal_terbaru' => $tanggalTerbaru
+        ];
     }
 }
