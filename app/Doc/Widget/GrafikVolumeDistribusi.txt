@@ -1,0 +1,15 @@
+Nama Komponen: GrafikVolumeDistribusi
+Tipe Komponen: Filament Chart Widget (Bar Chart / Grafik Batang)
+Tujuan Utama: Memonitor total tonase pergerakan logistik pangan harian guna menjaga stabilitas pasokan daerah.
+
+⚙️ Alur Kerja & Fungsi Bisnis
+Widget ini mengagregasikan volume distribusi komoditas pangan berdasarkan filter halaman aktif.
+
+1. Sinkronisasi Data & Filter Global (getData())
+   - Mekanisme Query: Menggunakan Query Builder DB::table('distribusis') untuk mempercepat performa eksekusi query.
+   - Penyaringan Waktu: Membaca filter global start_date dan end_date. Jika filter kosong, sistem otomatis membatasi visualisasi hanya untuk data 1 bulan terakhir (now()->subMonthsNoOverflow(1)).
+   - Agregasi Nilai: Mengakumulasikan data menggunakan rumus SQL SUM(volume) as total_volume yang dikelompokkan secara harian (groupBy('tanggal')). Data diurutkan secara maju (orderBy('tanggal', 'asc')) agar pergerakan grafik linier dari tanggal tua ke tanggal baru.
+
+2. Representasi Visual Sumbu Grafik
+   - Sumbu X (Labels): Menampilkan deretan tanggal riil mutasi barang yang dikompres menjadi format ringkas (misal: "25 May", "26 May").
+   - Sumbu Y (Datasets): Berupa grafik batang (Bar Chart) tunggal berwarna hijau emerald transparan (#10B981) yang merepresentasikan total volume barang (Kg) yang bergerak pada tanggal tersebut

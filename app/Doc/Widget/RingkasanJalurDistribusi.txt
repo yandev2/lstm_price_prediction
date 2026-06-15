@@ -1,0 +1,25 @@
+Nama Komponen: RingkasanJalurDistribusi
+Tipe Komponen: Filament Stats Overview Widget (Widget Kartu Statistik)
+Tujuan Utama: Menyajikan metrik operasional logistik mengenai rute pengiriman dengan akumulasi volume terbesar dan jenis moda transportasi yang paling sering digunakan dalam ekosistem distribusi.
+
+⚙️ Alur Kerja Fungsi Widget
+1. Penguncian Tata Letak Grid (getColumns)
+Tujuan: Mengatur pembagian area kartu statistik agar konsisten di semua ukuran perangkat.
+Output Menghasilkan: Mengunci tampilan dashboard menjadi tepat 2 kolom ('default' => 2 s.d '2xl' => 2) karena widget ini hanya memuat dua buah informasi informasi esensial (side-by-side layout).
+
+2. Agregasi Jalur Pengiriman Terpadat
+Tujuan: Mengisolasi rute distribusi spesifik (titik asal ke titik tujuan) yang memobilisasi tonase pasokan paling tinggi.
+Alur Eksekusi: * Melakukan query pada model Distribusi dengan menjumlahkan kolom volume (SUM(volume) as total_vol).
+Mengelompokkan data berdasarkan kombinasi dua titik koordinat sekaligus (groupBy('pasar_asal_id', 'pasar_tujuan_id')).
+Mengurutkan dari volume terbesar (orderBy('total_vol', 'desc')) dan mengeksekusi first() untuk mengambil peringkat teratas.
+Output Menghasilkan: Objek tunggal bermuatan relasi nama pasar asal dan pasar tujuan beserta total beban distribusinya yang di-render ke dalam kartu Jalur Distribusi Utama.
+
+3. Analisis Frekuensi Moda Transportasi
+Tujuan: Mengidentifikasi armada atau kendaraan logistik yang memiliki intensitas penggunaan paling tinggi.
+Alur Eksekusi: * Melakukan kalkulasi total frekuensi kemunculan teks armada menggunakan fungsi SQL count(*) as total_pakai.
+Dikelompokkan berdasarkan nama kendaraan (groupBy('transportasi')) dan diurutkan secara menurun untuk mengambil data baris pertama.
+Output Menghasilkan: String jenis kendaraan (misal: "Truk", "Pick Up") yang masuk ke dalam kartu Transportasi Utama sebagai armada andalan logistik.
+
+4. Kondisi Fallback Penanganan Data Kosong
+Tujuan: Mencegah terjadinya error system (seperti property notice on null) apabila database dalam keadaan kosong atau filter komoditas yang dipilih tidak memiliki riwayat mutasi.
+Output Menghasilkan: Mengubah output teks secara dinamis menjadi kalimat "Belum ada data" dan nilai volume ke angka "0".

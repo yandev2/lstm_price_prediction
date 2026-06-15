@@ -1,0 +1,22 @@
+Nama Komponen: TabelAlurDistribusi
+Tipe Komponen: Filament Table Widget (Datatable Log Aktivitas)
+Tujuan Utama: Menyajikan rincian data historis mutasi logistik pangan secara kronologis dari satu titik lokasi ke lokasi tujuan guna mempermudah audit alur distribusi daerah.
+
+⚙️ Alur Kerja Fungsi Widget
+1. Sinkronisasi Eager Loading & Query Filter
+Tujuan: Menampilkan data mutasi barang secara optimal tanpa membebani server transaksi.
+
+Alur Eksekusi:
+Memuat query utama melalui model Distribusi::query() dengan relasi with(['komoditas', 'pasarAsal', 'pasarTujuan']) untuk menghemat memori.
+Membaca filter halaman global (start_date dan end_date). Jika kosong, sistem membatasi riwayat data maksimal 1 bulan terakhir (now()->subMonthsNoOverflow(1)).
+Data diurutkan mundur berdasarkan tanggal entri terbaru (orderBy('tanggal', 'desc')) agar aktivitas terkini selalu berada di baris paling atas tabel.
+
+2. Kustomisasi Representasi Kolom Data
+Tanggal & Komoditas: Kolom penanggalan dikonversi ke standar format lokal (d M Y). Nama komoditas ditebalkan (weight('bold')) untuk memperkuat hierarki visual.
+Pemetaan Rute: Memisahkan visualisasi lokasi menjadi dua penanda ikon penunjuk arah yang jelas, yaitu 📍 Asal Pengiriman (pasarAsal) dan 🎯 Tujuan Pasar (pasarTujuan).
+Sufiks Dinamis Volume Produksi: Kolom nilai volume diatur menggunakan standar format angka Indonesia (locale: 'id'). Ditambahkan fungsi penutup suffix() untuk memanggil string satuan bawaan model secara otomatis (misal output: 1.500 Kg atau 500 Ton).
+Moda Transportasi: String jenis kendaraan dibungkus menggunakan visualisasi badge() berwarna info (biru) agar mempermudah pemilahan armada di baris tabel.
+
+3. Interaktivitas Antarmuka Datatable
+Pencarian Global (searchable): Diaktifkan khusus pada kolom nama komoditas, pasar asal, dan pasar tujuan untuk mempermudah pelacakan rute atau barang tertentu secara instan melalui kolom search.
+Pengurutan Data (sortable): Diterapkan pada kolom tanggal dan volume guna memudahkan analis dalam memetakan lonjakan pengiriman terbesar atau terkecil dalam satu periode.

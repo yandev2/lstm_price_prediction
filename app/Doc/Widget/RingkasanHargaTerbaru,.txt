@@ -1,0 +1,24 @@
+Nama Komponen: RingkasanHargaTerbaru
+Tipe Komponen: Filament Stats Overview Widget (Widget Kartu Statistik)
+Tujuan Utama: Menampilkan kartu ringkasan eksekutif (KPI Cards) dari rata-rata harga pangan per komoditas, lengkap dengan visualisasi tren fluktuasi terakhir serta rentang harga ekstrem (tertinggi & terendah).
+
+⚙️ Alur Kerja Fungsi Widget
+1. Pengaturan Responsivitas Grid (getColumns)
+Tujuan: Menentukan jumlah kartu yang tampil dalam satu baris agar tata letak tetap proporsional di berbagai ukuran layar.
+Output Menghasilkan: Konfigurasi grid adaptif di mana layar kecil (default, sm) menampilkan 2 kolom, sedangkan layar monitor (md ke atas) otomatis melebar menjadi 3 kolom.
+
+2. Eager Loading & Penyaringan Data (getStats)
+Tujuan: Mengambil data komoditas beserta log harganya secara efisien untuk menghindari masalah N+1 Query.
+Alur Eksekusi: * Melakukan query pada model Komoditas dengan membatasi relasi hargaPangan menggunakan fungsi penanggalan whereDate berdasarkan rentang filter global (start_date dan end_date).
+Mengurutkan log secara maju (orderBy('tanggal', 'asc')) agar posisi indeks data mencerminkan urutan kronologis yang valid.
+
+3. Komputasi Nilai Agregat & Tren Terakhir
+Untuk setiap komoditas yang memiliki riwayat harga, sistem melakukan kalkulasi otomatis:
+Statistik Utama: Menghitung nilai rata-rata (avg()), nilai puncak (max()), dan titik harga terendah (min()) dari koleksi data yang terfilter.
+Analisis Tren Terakhir: Mengisolasi entri paling akhir menggunakan last() sebagai data harga baru, dan mengambil entri tepat satu baris sebelumnya menggunakan slice(0, -1)->last() sebagai basis harga lama. Persentase dihitung untuk mengidentifikasi apakah harga sedang bergerak naik, turun, atau stabil.
+
+4. Kustomisasi Antarmuka HTML Bersarang ($deskripsiDetail)
+Tujuan: Membaca kode HTML kustom di dalam area deskripsi bawaan Filament Stat yang biasanya hanya menerima teks statis.
+Output Menghasilkan: Objek HtmlString yang menyusun layout berbaris ke bawah menggunakan utilitas kelas Tailwind CSS:
+Menampilkan teks indikator persentase berwarna interaktif (danger untuk kenaikan, success untuk penurunan).
+Menyisipkan garis pembatas tipis (border-t) yang memuat informasi pelengkap harga tertinggi dan terendah secara rapi di dalam satu kartu stat.

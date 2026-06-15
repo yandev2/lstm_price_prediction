@@ -1,0 +1,86 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/Admin/**/*';
+@source '../../../../resources/views/filament/admin/**/*';
+
+.ftv-shell {
+    --ftv-line-color: oklch(59.169% 0.12785 237.665);
+}
+
+.fi-ta-timeline {
+    /* Override container padding, e.g. flush against the section card. */
+    padding: 10;
+}
+
+.fi-wi-widget.fi-wi-chart section{
+    @apply text-black shadow-md p-2; 
+}
+
+.fi-wi-alert-pangan{
+    @apply text-black shadow-md p-2;  
+}
+
+
+.fi-wi-stats-overview-stat {
+    @apply text-black shadow-md p-4;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, shadow;
+    transform: perspective(1px) translateZ(0);
+    backface-visibility: hidden;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    @apply -translate-y-1 shadow-xl;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.fi-wi-stats-overview-stat:hover canvas {
+    @apply brightness-110;
+}
+
+.fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-value {
+    @apply text-2xl font-bold
+}
+
+.fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-value {
+    @apply text-2xl font-bold
+}
+
+.fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-label-ctn span {
+    @apply text-base md:text-xs 2xl:text-base
+}
+
+.fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-description span {
+    @apply text-gray-600 text-xs dark:text-gray-400 mb-3
+}
+
+
+/* Mengatur ukuran scrollbar (Chrome, Safari, Edge) */
+.fi-sidebar-nav::-webkit-scrollbar {
+    @apply w-1.5; /* Setara dengan lebar 6px */
+}
+
+/* Background jalur scrollbar */
+.fi-sidebar-nav::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+/* Warna dan bentuk gagang scrollbar (Mendukung Dark Mode) */
+.fi-sidebar-nav::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full transition-colors duration-200;
+    @apply dark:bg-gray-800; /* Warna abu-abu gelap saat dark mode */
+}
+
+/* Efek saat scrollbar disorot mouse */
+.fi-sidebar-nav::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300;
+    @apply dark:bg-gray-700;
+}
+
+/* ---------------------------------------------------- */
+/* Dukungan untuk Mozilla Firefox menggunakan Arbitrary Values Tailwind */
+.fi-sidebar-nav {
+    @apply [scrollbar-width:thin] [scrollbar-color:theme(colors.gray.200)_transparent] dark:[scrollbar-color:theme(colors.gray.800)_transparent];
+}
+

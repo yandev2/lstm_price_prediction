@@ -1,0 +1,34 @@
+📈 Dokumentasi Teknis: Widget Grafik Perubahan Harga (ChartPerubahanHarga.php)
+
+Nama Komponen: ChartPerubahanHarga
+Tipe Komponen: Filament Chart Widget (Line Chart / Grafik Garis)
+Fitur Integrasi: * InteractsWithPageFilters (Sinkronisasi Filter Global Halaman)
+HasWidgetShield (Proteksi Hak Akses Role-Based)
+
+⚙️ Alur Kerja & Logika Bisnis (Business Logic)
+Widget ini berfungsi untuk memvisualisasikan tren persentase fluktuasi harga komoditas dalam bentuk grafik garis multi-dataset, lengkap dengan teks deskripsi dinamis di bagian atas grafik.
+
+1. Mekanisme Deskripsi Dinamis (getDescription())
+Fungsi ini bertindak sebagai konduktor teks yang merangkum kondisi grafik secara cerdas berdasarkan rentang tanggal dan pasar yang dipilih:
+
+- Analisis Data: Mengambil seluruh data riwayat perubahan harga, lalu mengelompokkannya per komoditas (groupBy('komoditas_id')).
+- Pencarian Ekstremitas: Melakukan looping untuk mendeteksi komoditas mana yang mengalami kenaikan tertinggi ($highestIncrease) dan penurunan terbesar ($highestDecrease) berdasarkan perbandingan harga_baru dan harga_lama.
+- Output Teks Kondisional:
+     - Status Stabil (🟢): Jika batas kenaikan tertinggi dan penurunan terbesar masih di bawah angka 2%, deskripsi akan menampilkan teks: "Harga seluruh komoditas relatif stabil".
+     - Status Deflasi (📉): Jika penurunan harga lebih dominan dibanding lonjakan kenaikan, sistem menampilkan nama komoditas beserta persentase drop-nya.
+     - Status Inflasi (📈): Jika lonjakan harga lebih tinggi dari penurunan, sistem otomatis menampilkan komoditas dengan kenaikan tertinggi tersebut.
+
+2. Generator Data Grafik (getData())
+- Sinkronisasi Filter: Query mendengarkan inputan filter global secara dinamis (pasar_id, komoditas_id, serta rentang waktu start_date dan end_date). Jika tanggal kosong, sistem otomatis mengambil data 1 bulan terakhir (now()->subMonthsNoOverflow(1)).
+- Pemetaan Sumbu X (Labels): Mengambil kolom tanggal_perubahan, membuang duplikasi tanggal (unique()), diurutkan maju, lalu diubah ke format penanggalan d-m-Y.
+- emetaan Sumbu Y (Datasets):
+     - Setiap komoditas dipecah menjadi satu garis dataset terpisah.
+     - Sistem melakukan pencocokan (firstWhere) antara data komoditas terhadap daftar tanggal di Sumbu X.
+     - Jika ada kecocokan data, nilainya diisi berupa rumus Persentase Perubahan Harga Harian. Jika tidak ada data inputan pada tanggal tersebut, nilainya diset null (garis terputus/tidak melompat ke angka nol).
+
+🗄️ Struktur Model Data Terkait
+Widget ini bergantung penuh pada model HistoryHargaPangan dengan struktur minimal kolom:
+ - komoditas_id (Relasi ke model Komoditas untuk mengambil nama_komoditas).
+ - pasar_id (Untuk filter titik pasar).
+ - tanggal_perubahan (Sebagai parameter waktu sumbu X).
+ - harga_lama & harga_baru (Sebagai basis kalkulasi persentase sumbu Y).

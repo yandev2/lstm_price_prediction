@@ -1,0 +1,26 @@
+🚨 Dokumentasi Teknis: Widget Radar & Alert Harga Pangan (AlertHargaPangan.php)
+
+Nama Komponen: AlertHargaPangan
+Tipe Komponen: Custom Filament Dashboard Widget (Livewire Backend)
+Keamanan Sistem: Terintegrasi dengan Spatie & Filament Shield (HasWidgetShield) untuk pembatasan hak akses berbasis Role.
+Cakupan Visual: full-width (Lebar penuh memotong grid dashboard, diposisikan pada prioritas utama di layar atas).
+
+⚙️ Alur Kerja & Logika Bisnis (Business Logic)
+Widget ini bekerja secara proaktif dengan metode Tiga Lapisan Radar Deteksi yang dieksekusi secara real-time setiap kali dashboard diakses oleh pengguna.
+
+1. Radar Fluktuasi Harga Mikro (Deteksi Lonjakan & Harga Anjlok)
+- Proses Query: Sistem melakukan teknik subquery SQL MAX(id) yang dikelompokkan berdasarkan kombinasi pasar_id dan komoditas_id. Pendekatan ini menjamin sistem hanya memeriksa input data paling baru/terakhir di setiap lokasi pasar tanpa tercampur dengan pasar lain.
+- Komparasi Data: Sistem mencari data tepat satu baris sebelum data terbaru (id < $record->id) pada pasar dan komoditas yang sama sebagai basis harga lama ($hargaSebelumnya).
+- Kondisi Pemicu Masalah: 
+       -Krisis Lonjakan (Status: DANGER | Warna: Merah): Terjadi jika persentase kenaikan harga pangan $\ge$ 5%. Sistem akan memicu alarm operasi pasar darurat untuk melindungi konsumen.
+       -Krisis Harga Anjlok (Status: WARNING | Warna: Amber/Kuning): Terjadi jika persentase penurunan harga $\le$ -5%. Menggunakan fungsi matematika abs($persentase) untuk membuang nilai minus saat teks dicetak. Alarm ini berfungsi melindungi produsen/petani lokal dari kerugian akibat oversupply atau permainan tengkulak.
+
+2. Radar Pasokan Logistik Daerah (Deteksi Gangguan Distribusi)
+- Proses Query: Mengagregasikan total volume (SUM('volume')) dari tabel distribusis dengan membandingkan data hari berjalan (now()->today()) terhadap data satu hari sebelumnya (now()->yesterday()).
+- Kondisi Pemicu Masalah (Status: WARNING | Warna: Amber/Kuning):
+       -Terjadi jika arus mobilisasi pasokan pangan yang masuk ke daerah mengalami penurunan drastis $\ge$ 30% dibanding hari kemarin. Alarm ini mengindikasikan adanya kendala pada jalur logistik, blokade jalan, atau penurunan suplai dari luar daerah.
+
+3. Radar Stabilitas Total (Kondisi Normal)
+- Kondisi Pemicu (Status: NORMAL | Warna: Hijau):
+       - Jika setelah melewati proses pengecekan Radar 1, 2, dan 4 di atas array penampung data ($results) tetap dalam kondisi kosong (empty()), sistem secara otomatis mereduksi tampilan krisis menjadi satu spanduk hijau teduh. Ini menandakan seluruh indikator pangan di wilayah Pemda dalam kondisi aman dan stabil.
+       

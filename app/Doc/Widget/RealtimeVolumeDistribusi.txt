@@ -1,0 +1,30 @@
+Nama Komponen: RealtimeVolumeDistribusi
+Tipe Komponen: Filament Chart Widget (Line Chart / Grafik Garis Multi-Dataset)
+Tujuan Utama: Memantau fluktuasi aktivitas keluar-masuk logistik pangan secara per jam (hourly) serta membandingkannya langsung dengan pola waktu yang sama pada hari kemarin untuk mendeteksi anomali rantai pasok secara real-time.
+
+⚙️ Alur Kerja Fungsi Widget
+1. Fungsi Pengolah Data Pusat (getDistributionData)
+   - Tujuan: Menjadi mesin komputasi tunggal yang mengekstrak, mengelompokkan, dan membandingkan data logistik 24 jam penuh antara hari ini dan kemarin.
+   - Alur Eksekusi:
+       - Melakukan query database terpisah menggunakan DB::table('distribusis') untuk mempercepat pemrosesan data.
+       - Menggunakan fungsi SQL EXTRACT(HOUR FROM created_at) untuk memecah dan mengelompokkan total volume pasokan berdasarkan slot jam input (00:00 s.d 23:00).
+       - Menjalankan perulangan (looping) 24 jam untuk memetakan slot data yang kosong menjadi 0 agar garis grafik tidak terputus.
+   - Output Menghasilkan: Array terstruktur yang berisi kumpulan data volume hari ini (volumesHariIni), data kemarin (volumesKemarin), label penunjuk waktu (labels), dan kesimpulan teks deskripsi dinamis (deskripsi).
+
+2. Fungsi Deskripsi Grafik (getDescription)
+   - Tujuan: Menyediakan ringkasan eksekutif instan berupa teks indikator di bagian atas grafik.
+   - Alur Eksekusi: Menghitung persentase deviasi total tonase hari ini terhadap kemarin.
+   - Output Menghasilkan: * Teks Inflasi Logistik (📈) jika volume hari ini meningkat.
+     - Teks Deflasi Logistik (📉) jika volume hari ini menurun.
+     - Teks Kondisi Khusus (🟢/⚪) jika salah satu hari atau kedua hari tersebut tidak memiliki riwayat transaksi masuk.
+3. Fungsi Render Visual Grafik (getData & getType)
+   - Tujuan: Menampilkan visualisasi data logistik ke dalam komponen UI dashboard.
+   - Output Menghasilkan: Grafik garis berjenis line dengan dua jalur data:
+   - Dataset Hari Ini: Garis biru tegas (#3b82f6) dengan bayangan semi transparan di bagian bawah (fill: true) dan kelengkukan dinamis (tension: 0.35).
+   - Dataset Kemarin: Garis abu-abu putus-putus (borderDash: [5, 5]) sebagai garis bantu pembanding.
+
+4. Fungsi Konfigurasi Chart.js (getOptions)
+   - Tujuan: Melakukan kustomisasi interaksi grafik melalui injeksi RawJs.
+   - Output Menghasilkan: * Sinkronisasi tooltip multi-dataset (mode: 'index') sehingga pengguna bisa melihat perbandingan angka hari ini vs kemarin di jam yang sama dalam satu popup melayang.
+   - Pembersihan sumbu X (maxTicksLimit: 12) agar teks label jam tidak berhimpitan di layar ponsel.
+   - Lokalisasi format angka desimal dan ribuan berbasis standar Indonesia (id-ID).

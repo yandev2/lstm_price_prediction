@@ -1,0 +1,23 @@
+Nama Komponen: HargaPanganRealtimeTable
+Tipe Komponen: Filament Table Widget (Datatable Terintegrasi)
+Tujuan Utama: Menyajikan lembar data harga pangan terkini dari setiap titik pasar guna mempermudah pengawasan langsung di lapangan.
+
+⚙️ Alur Kerja & Fungsi Bisnis
+Widget ini mengelola data log transaksi harga pangan menjadi tabel ringkasan kondisi terakhir komoditas.
+
+1. Isolasi Data Terakhir via Subquery SQL
+   - Mekanisme Query: Menggunakan teknik klausul whereIn dengan subquery MAX(id) yang dikelompokkan berdasarkan ['pasar_id', 'komoditas_id'].
+   - Efek Teknis: Tabel dipaksa untuk hanya menampilkan satu baris data paling baru untuk tiap-tiap komoditas di setiap pasar. Riwayat harga lama diabaikan agar data tidak menumpuk.
+   - Filter Global: Query otomatis merespons perubahan filter pasar_id dan komoditas_id dari filter utama halaman tanpa memicu reload halaman penuh.
+
+2. Komputasi Tren Perubahan Harga (status_tren)
+   - Pencarian Pembanding: Menarik data satu baris tepat sebelum entri terbaru (id < $record->id) pada kombinasi pasar dan komoditas yang sama sebagai data $hargaSebelumnya.
+   - Kalkulasi Persentase: Membandingkan nilai harga saat ini dengan harga sebelumnya melalui rumus persentase deviasi.
+   - Sistem Warna Badge:
+        - danger (Merah/▲): Jika harga mengalami kenaikan (indikasi inflasi mikro).
+        - success (Hijau/▼): Jika harga mengalami penurunan (indikasi deflasi/pasokan melimpah).
+        - gray (Abu-abu/⚪): Jika harga sama atau data pembanding tidak ditemukan (status stabil).
+
+3. Fitur Komponen Kolom Tabel
+   - Waktu Update: Menampilkan stempel waktu input data (created_at) dengan format Indonesia (d M Y | H:i) berwujud badge abu-abu.
+   - Pencarian & Pengurutan: Kolom Nama Komoditas dan Lokasi Pasar dilengkapi fungsi searchable() untuk pencarian cepat, serta seluruh kolom esensial dipasang fungsi sortable() untuk mempermudah pemetaan urutan harga tertinggi/terendah.

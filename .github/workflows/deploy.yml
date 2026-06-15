@@ -1,0 +1,137 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo, pdo_pgsql, gd, bcmath, zip, xml, dom
+          coverage: none
+
+      - name: Install dependencies (Build)
+        run: composer install --no-interaction --prefer-dist --no-progress --no-dev --optimize-autoloader --ignore-platform-reqs --no-scripts
+
+      - name: Node.js & Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Assets
+        run: |
+          npm install
+          npm run build
+
+      - name: Package artifact
+        run: |
+          rm -rf .git tests node_modules vendor storage bootstrap/cache
+          tar -czf ../app.tar.gz ./
+          mv ../app.tar.gz .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: app.tar.gz
+
+  deploy:
+    name: Deploy to Production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app
+          path: .
+
+      - name: Install ssh key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          # ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -T 10 -t ed25519,rsa -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+      - name: Deploy Process
+        run: |
+          # Variabel ini dibuat di runner GitHub
+          REL=$(date +%Y%m%d%H%M%S)-${GITHUB_SHA::7}
+          
+          # scp -P "${{ secrets.SSH_PORT }}" app.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_DIR }}/releases/tmp-$REL.tar.gz
+          scp -O -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa -P "${{ secrets.SSH_PORT }}" app.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.APP_DIR }}/releases/tmp-$REL.tar.gz
+          # Gunakan double quotes agar secrets bisa terbaca, dan \$ untuk variabel remote
+          # ssh -p "${{ secrets.SSH_PORT }}" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+          ssh -tt -o StrictHostKeyChecking=no -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa -p "${{ secrets.SSH_PORT }}" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            set -e
+            cd ${{ secrets.APP_DIR }}/releases
+            
+            mkdir -p $REL
+            tar -xzf tmp-$REL.tar.gz -C $REL
+            rm tmp-$REL.tar.gz
+            cd $REL
+            
+            # --- LINKING & PREPARATION (FIX DOUBLE STORAGE) ---
+            # 1. Hapus folder storage fisik bawaan rilis agar tidak menjadi storage/storage
+            rm -rf storage
+            
+            # 2. Link ke shared storage yang asli
+            ln -sfn ${{ secrets.APP_DIR }}/shared/storage storage
+            
+            # 3. Link file environment
+            ln -sfn ${{ secrets.APP_DIR }}/shared/.env .env
+            
+            # 4. Hapus public/storage lama jika ada agar storage:link tidak error/double
+            rm -rf public/storage
+            
+            mkdir -p bootstrap/cache
+            chmod -R 777 bootstrap/cache
+            
+            # --- FIX PERMISSIONS ---
+            sudo chown -R www-data:www-data ${{ secrets.APP_DIR }}/shared/storage
+            sudo chown -R www-data:www-data .
+            sudo chmod -R 775 ${{ secrets.APP_DIR }}/shared/storage bootstrap/cache
+
+            # --- JALANKAN COMPOSER (PHP 8.2) ---
+            composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader --ignore-platform-reqs
+            
+            # --- ARTISAN OPTIMIZATION ---
+            # Jalankan sebagai www-data agar link di public dimiliki oleh web server
+            sudo -u www-data php artisan migrate --force
+            #sudo -u www-data php artisan migrate:fresh --force
+            sudo -u www-data php artisan storage:link || true
+            # sudo -u www-data php artisan key:generate
+            sudo -u www-data php artisan optimize:clear
+            sudo -u www-data php artisan config:cache
+            sudo -u www-data php artisan route:cache
+           
+            # --- AKTIVASI ---
+            ln -sfn ${{ secrets.APP_DIR }}/releases/$REL ${{ secrets.APP_DIR }}/current
+          "
+
+      - name: Post-Deploy (Migration & Reload)
+        run: |
+          ssh -p "${{ secrets.SSH_PORT }}" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd ${{ secrets.APP_DIR }}/current
+            php artisan migrate --force
+            php artisan queue:restart
+           # Gunakan reload secara hati-hati agar tidak memutus sesi SSH
+            echo 'Reloading services...'
+            sudo systemctl reload php8.2-fpm || sudo systemctl restart php8.2-fpm || true
+            sudo systemctl reload nginx || true
+            php artisan config:clear && php artisan route:clear && php artisan view:clear
+            echo 'Done!'
+          "

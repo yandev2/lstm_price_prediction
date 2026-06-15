@@ -1,0 +1,27 @@
+Nama Komponen: TrendHargaPasar
+Tipe Komponen: Filament Chart Widget (Line Chart / Grafik Garis Multi-Dataset)
+Tujuan Utama: Memetakan fluktuasi pergerakan rata-rata harga komoditas pangan secara harian guna mendeteksi tren inflasi atau deflasi pasar dalam rentang waktu tertentu.
+
+⚙️ Alur Kerja Fungsi Widget
+1. Pembatasan Sumbu Rentang Waktu (getDescription & getData)
+Tujuan: Menentukan ruang lingkup data kalender yang akan ditarik ke dalam grafik.
+Alur Eksekusi: Sistem membaca filter start_date dan end_date. Jika kosong, nilai fallback diatur otomatis untuk menampilkan periode 1 bulan terakhir. Tanggal sengaja dikunci ke awal bulan (startOfMonth()) dan akhir bulan (endOfMonth()) agar visualisasi potongan tren di dashboard terlihat utuh dan simetris.
+
+2. Komputasi Agregasi Nilai via Package Flowframe\Trend
+Tujuan: Menghitung rata-rata nilai riil komoditas tanpa perlu menulis query SQL groupBy manual yang kompleks.
+
+Alur Eksekusi:
+Melakukan perulangan (looping) pada model Komoditas. Di dalam perulangan, class Trend::query() dipanggil dengan menyisipkan kloningan $baseQuery dari tabel harga_pangans.
+Menggunakan instruksi perDay() untuk memecah data secara harian, menyasar kolom data tanggal, dan menghitung akumulasinya lewat perintah aggregate('harga', 'avg').
+Output Menghasilkan: Pengaturan sumbu X (labels) berupa teks tanggal terformat Indonesia (d M Y), serta deretan koordinat sumbu Y (datasets) berisi angka rata-rata harga harian untuk tiap-tiap komoditas pangan.
+
+3. Injeksi Palet Warna Dinamis (hexToRgba)
+Tujuan: Mengonversi daftar kode warna HEX milik properti array $colors menjadi format string rgba().
+Output Menghasilkan: Background area bawah garis grafik yang memiliki efek gradasi warna transparan transparan (opacity = 0.1) sesuai dengan warna garis induk komoditasnya agar grafik multi-line tidak saling menutupi.
+
+4. Kustomisasi Render Visual Chart.js (getOptions)
+Tujuan: Mengatur perilaku interaktivitas komponen Chart.js melalui objek RawJs.
+Output Menghasilkan:
+Optimasi Sumbu Y (beginAtZero: false): Skala batas bawah grafik tidak dimulai dari angka 0, melainkan mengikuti batas minimum harga riil di pasar. Tujuannya agar riak fluktuasi kecil (misal: perubahan harga beras dari Rp13.000 ke Rp13.500) terlihat meliuk kontras dan sensitif.
+Pembersihan Sumbu X (autoSkip: true): Membatasi teks tanggal maksimal hanya 12 titik (maxTicksLimit: 12) agar tulisan di bawah layar tidak bertumpuk dan tetap bersih.
+Sinkronisasi Tooltip (mode: 'index'): Mengaktifkan deteksi garis vertikal global (intersect: false). Saat kursor digeser mendekati salah satu tanggal, kotak hitam melayang otomatis menampilkan seluruh daftar harga komoditas lain pada tanggal tersebut secara bersamaan untuk mempermudah komparasi antar-pangan.
