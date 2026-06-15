@@ -13,7 +13,7 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'python_binary' => env('PYTHON_BINARY'),
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

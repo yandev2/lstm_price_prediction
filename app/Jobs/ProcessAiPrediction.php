@@ -79,9 +79,11 @@ class ProcessAiPrediction implements ShouldQueue
 
                 throw new Exception($errorMsg);
             }
+            $python = config('services.python_binary');
+
 
             $process = new Process([
-                'python3',
+                $python,
                 $pythonScript,
                 '--payload',
                 $payloadPath,
