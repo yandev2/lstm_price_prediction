@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Activities\Widgets;
+namespace App\Filament\Admin\Resources\Activities\Widgets;
 
 use App\Filament\Admin\Resources\Activities\Pages\ListActivities;
 use Filament\Support\Icons\Heroicon;
