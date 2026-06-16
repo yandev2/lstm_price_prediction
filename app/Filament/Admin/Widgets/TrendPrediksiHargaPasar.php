@@ -91,7 +91,7 @@ class TrendPrediksiHargaPasar extends ChartWidget
                 'borderDash' => [5, 5], // Garis putus-putus untuk menandakan prediksi
                 'tension' => 0.45, 
                 'cubicInterpolationMode' => 'monotone', 
-                'pointRadius' => 0, 
+                'pointRadius' => 3, 
                 'pointHoverRadius' => 6, 
                 'pointBackgroundColor' => '#ffffff',
                 'pointBorderColor' => $color,
