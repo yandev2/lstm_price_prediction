@@ -86,7 +86,7 @@ class AppServiceProvider extends ServiceProvider
     private function bootSSL()
     {
         if ($this->app->environment('production')) {
-          //  URL::forceScheme('https');
+           //  URL::forceScheme('https');
         }
     }
     public function boot(): void

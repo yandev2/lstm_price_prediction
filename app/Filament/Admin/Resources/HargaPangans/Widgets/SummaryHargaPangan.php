@@ -29,12 +29,25 @@ class SummaryHargaPangan extends Widget
             return ['stats' => [], 'tanggal_terbaru' => null];
         }
 
-        // Ambil SEMUA data harga pada tanggal terbaru secara bulk dalam 1 waktu
-        // beserta relasi komoditas dan pasar (Eager Loading)
-        $semuaHargaHariIni = HargaPangan::with(['komoditas', 'pasar'])
-            ->where('tanggal', $tanggalTerbaru)
-            ->get()
-            ->groupBy('komoditas_id');
+        // Ambil tanggal terbaru untuk SETIAP komoditas agar semua komoditas tetap muncul
+        // meskipun ada 1 komoditas yang baru saja diimport dengan tanggal yang lebih baru
+        $latestDates = HargaPangan::selectRaw('komoditas_id, MAX(tanggal) as max_tanggal')
+            ->groupBy('komoditas_id')
+            ->get();
+
+        $query = HargaPangan::with(['komoditas', 'pasar']);
+
+        // Filter data harga hanya pada hari terakhir masing-masing komoditas
+        $query->where(function ($q) use ($latestDates) {
+            foreach ($latestDates as $latest) {
+                $q->orWhere(function ($subQ) use ($latest) {
+                    $subQ->where('komoditas_id', $latest->komoditas_id)
+                         ->whereDate('tanggal', \Carbon\Carbon::parse($latest->max_tanggal)->toDateString());
+                });
+            }
+        });
+
+        $semuaHargaHariIni = $query->get()->groupBy('komoditas_id');
 
         foreach ($semuaHargaHariIni as $komoditasId => $hargaPanganGroup) {
             
